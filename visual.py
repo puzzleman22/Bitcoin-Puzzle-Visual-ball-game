@@ -4,6 +4,7 @@ import secp256k1 as ice
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()
 
 # Constants
 SCREEN_WIDTH = 1200
@@ -11,6 +12,7 @@ SCREEN_HEIGHT = 600
 BALL_RADIUS = 10
 INITIAL_BALL_COUNT = 72
 TARGET_ADDRESS = '12VVRNPi4SJqUTsp6FmqDqY5sGosDtysn4'
+MUSIC_VOLUME = 0.3  # 30% volume
 
 # Colors
 WHITE = (255, 255, 255)
@@ -18,6 +20,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
 
 # Initialize screen and font
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -151,8 +154,42 @@ class BallGame:
         self.velocity_range = [-1, 1]
         self.balls = []
         self.hex_manipulator = HexManipulator()
+        self.music_playing = True
+        self.music_loaded = False
+        
+        # Try to load background music
+        self.load_music()
+        
+        # Create initial balls
         self.reset_balls()
         
+    def load_music(self):
+        """Load background music file"""
+        try:
+            # Try to load music file - change filename to your MP3 file
+            pygame.mixer.music.load("find_da_wae.mp3")
+            pygame.mixer.music.set_volume(MUSIC_VOLUME)
+            pygame.mixer.music.play(-1)  # -1 means loop forever
+            self.music_loaded = True
+            print("Music loaded successfully!")
+        except pygame.error as e:
+            print(f"Could not load music file: {e}")
+            print("Game will continue without music.")
+            self.music_loaded = False
+            self.music_playing = False
+    
+    def toggle_music(self):
+        """Toggle music on/off"""
+        if not self.music_loaded:
+            return
+            
+        if self.music_playing:
+            pygame.mixer.music.pause()
+            self.music_playing = False
+        else:
+            pygame.mixer.music.unpause()
+            self.music_playing = True
+    
     def reset_balls(self):
         """Create new set of balls with updated velocity range"""
         self.balls = []
@@ -180,6 +217,20 @@ class BallGame:
                 for ball in self.balls:
                     if ball.handle_click(mouse_x, mouse_y):
                         self.score += 1
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    # Toggle music with spacebar
+                    self.toggle_music()
+                elif event.key == pygame.K_UP and self.music_loaded:
+                    # Increase volume with UP arrow
+                    current_volume = pygame.mixer.music.get_volume()
+                    new_volume = min(1.0, current_volume + 0.1)
+                    pygame.mixer.music.set_volume(new_volume)
+                elif event.key == pygame.K_DOWN and self.music_loaded:
+                    # Decrease volume with DOWN arrow
+                    current_volume = pygame.mixer.music.get_volume()
+                    new_volume = max(0.0, current_volume - 0.1)
+                    pygame.mixer.music.set_volume(new_volume)
     
     def update_physics(self):
         """Update ball positions and handle collisions"""
@@ -269,10 +320,23 @@ class BallGame:
         )
         screen.blit(velocity_text, (10, 80))
         
+        # Draw music status
+        if self.music_loaded:
+            music_status = "ON" if self.music_playing else "OFF"
+            music_color = GREEN if self.music_playing else RED
+            music_text = small_font.render(f"Music: {music_status} (SPACE to toggle)", True, music_color)
+            screen.blit(music_text, (10, 110))
+            
+            # Show volume
+            volume = int(pygame.mixer.music.get_volume() * 100)
+            volume_text = small_font.render(f"Volume: {volume}% (↑/↓ to adjust)", True, BLACK)
+            screen.blit(volume_text, (10, 140))
+        
         # Draw instructions
         instructions = [
             "Click on balls to launch them!",
-            f"Searching for: {TARGET_ADDRESS[:20]}..."
+            f"Searching for: {TARGET_ADDRESS[:20]}...",
+            "SPACE: Toggle Music | ↑/↓: Volume"
         ]
         for i, instruction in enumerate(instructions):
             inst_text = small_font.render(instruction, True, BLUE)
@@ -305,6 +369,10 @@ class BallGame:
             
             # Increment iteration counter
             self.iteration += 1
+        
+        # Stop music before quitting
+        if self.music_loaded:
+            pygame.mixer.music.stop()
         
         pygame.quit()
         
