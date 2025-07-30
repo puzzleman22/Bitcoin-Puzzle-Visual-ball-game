@@ -7,3 +7,9 @@ in this game each ball is a bit, for puzzle 73 = 1 prefix + 72 balls
 ## How to use
 
 just run `python visual.py`
+
+# for questions and other things
+Author Telegram: **https://t.me/nmn5436**
+
+if you liked this idea or found something, my BTC address for donations:
+**bc1p6fmhpep0wkqkzvw86fg0afz85fyw692vmcg05460yuqstva7qscs2d9xhk**
