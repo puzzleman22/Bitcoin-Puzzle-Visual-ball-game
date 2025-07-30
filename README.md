@@ -6,6 +6,13 @@ in this game each ball is a bit, for puzzle 73 = 1 prefix + 72 balls
 
 ## How to use
 
+if you want to change the address edit the bit size and target address, 1 prefix + bit size
+so for puzzle 73, we use 72 bits, because 1 will be the prefix
+`
+    size = 72
+    target = '12VVRNPi4SJqUTsp6FmqDqY5sGosDtysn4'
+`
+
 just run `python visual.py`
 
 # for questions and other things
